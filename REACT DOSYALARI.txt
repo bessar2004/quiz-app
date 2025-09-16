@@ -1,0 +1,88 @@
+REACT DOSYALARI
+----------------
+
+
+
+
+
+PACKAGE.JSON DOSYASI
+--------------------
+
+
+
+{
+   BURADA PROJENIN BILGILERI VE CALISTIRMA KILAVUZU (KOMUTLAR) ICERIYOR
+  "name": "quiz-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+
+
+  "scripts": {
+    "dev": "vite",  >> projeyi calistiran komut
+    "build": "vite build", >> klasorleri optimize (sikistirir) yapar  
+    "lint": "eslint .",  >> kodlari hatadan ayiklar 
+    "preview": "vite preview" >> sikistirilan dosyalar bu komutla calistirilir ve test edilir 
+  },
+
+PROJEDE KULLANILAN KUTUPHANELER
+
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+
+
+ PROJYI GELISTIRMEK ICIN KULLANILAN ARACLAR
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "vite": "^7.1.2"
+  }
+
+}
+
+
+PACKAGE-LOCK.JSON DOSYASI  >> bu dosyada daha detayli olarak kutuphanelerin hangi surum+nerden geldikleri hangi kaynaktan +bagimlilikari kaydeder 
+-------------------------
+
+
+
+VITE-CONFING.JS >> bu dosya ise projenin ayarlari  
+-----------------
+
+
+
+README.md  >> proje nasil kullanim kilavuzu proje nedir +projenin hangi teknolojilerin kullandikleri+projenin nasil kuralacagi ve nasil calistirilacagi hepsni iceriyor
+---------
+
+
+
+eslint.config.js >>  
+----------------
+
+1-js ve jsx  uzantilarini kontrol eder.
+2-terminalede hata varsa  uyari verir.
+3-kullanilmayan değişikliklere engelliyor.
+4-dist klasorunu görmezden geliyor.
+
+kisacasi >> senin yazdigin kodlari temiz ,arindirilmis,hatasiz  sağlayan ayarlari tutuyor
+
+
+
+npm run build >> terminalde bunu yazinca src de bulunan dosyalari sikistiri optimize eder 3-5 dosya haline gelerek  dist/ klasorunde saklanir 
+
+dist/ >>senin projen derlenmis yayinlancak hali 
+
+
+
+.gitignore >> bu dosyada eger projeni Git-Hab a paylasmak istersen bu dosya gereksiz dosyalari gormezden gelir ve eklemez 
+------------
+

@@ -1,0 +1,280 @@
+quiz.jsx dosyasi 
+------------------
+
+
+
+
+
+import { useState, useEffect } from "react";
+import Question from "../models/Question";
+
+
+
+//8-25 soru eklene biliyor 
+export default function Quiz({ category, user, onBack, onShowScores }) {
+  const allQuestions = {
+    HTML: [
+      new Question("HTML'in açılımı nedir?", ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks Text Markup"], "Hyper Text Markup Language"),
+      new Question("Hangi etiket başlık (heading) içindir?", ["<p>", "<h1>", "<div>"], "<h1>"),
+    ],
+    CSS: [
+      new Question("CSS hangi amaçla kullanılır?", ["Veritabanı yönetimi", "Stil ve tasarım", "Sunucu programlama"], "Stil ve tasarım"),
+      new Question("Renk vermek için hangi özellik kullanılır?", ["color", "font-size", "background"], "color"),
+    ],
+    React: [
+      new Question("React hangi dili temel alır?", ["Python", "JavaScript", "PHP"], "JavaScript"),
+      new Question("React'te component nasıl yazılır?", ["function", "class", "her ikisi"], "her ikisi"),
+    ],
+    JS: [
+    new Question("JavaScript'te değişken tanımlamak için hangi anahtar kelime kullanılmaz?", ["var", "let", "const", "define"], "define"),
+    new Question("JavaScript'te array'in uzunluğunu veren property hangisidir?", ["length", "size", "count"], "length"),
+  ],
+  };
+
+
+
+  // Kullanıcının eklediği custom sorular
+
+  //34  burada  localstorage den  soru ekle  formnda localstorage veriler yuklenmisiti onlari buradan cekiyor 
+  // 35 sonra her katogeriye gore sorulari siklari ve  cevaplari filtreliyor eger html ilse sadece html sorulari  
+  // 37 bu sorulari bir nesne objesine donusturuyoor 
+  const stored = JSON.parse(localStorage.getItem("customQuestions")) || [];
+  const customQuestions = stored
+    .filter((q) => q.category === category)
+    .map((q) => new Question(q.text, q.options, q.correctAnswer));
+
+
+
+//stateler 
+//43 ekledigin sorular ile + sabit sorulari birlestirme 
+  const questions = [...allQuestions[category], ...customQuestions];
+  const [currentIndex, setCurrentIndex] = useState(0); //kacinici soruda oldugumuzu tutar
+  const [score, setScore] = useState(0);// dogru cevap sayisi
+  const [finished, setFinished] = useState(false); // quiz bittimi 
+  const [time, setTime] = useState(15); // geri sayim suresi 
+  const currentQuestion = questions[currentIndex];//sorulari index ledi 
+
+
+
+//zamanlayici
+//56-57  cevabi vermemis olarak kabul et 
+  useEffect(() => {
+    if (finished) return;
+    if (time === 0) {
+      handleAnswer(null);
+      return;
+    }
+    // burada zamani azaltir 15-14-13 ...... gibi 
+    const timer = setTimeout(() => setTime(time - 1), 1000);
+    // sonra onceki sureyi tekrar 15s doner 
+    return () => clearTimeout(timer);
+  }, [time, finished]); // nezaman calisir bu fonksiyon zaman azaldikca + quiz bitince
+
+
+
+
+// burada senin cevapaladigin siklari kontrol eder dogru mu diye 
+// eger dogru ise +1 scor eklenir 
+  function handleAnswer(answer) {
+    if (answer && currentQuestion.checkAnswer(answer)) {
+      setScore(score + 1);
+    }
+    const nextIndex = currentIndex + 1; // burada bir sonraki soruya gecmek icin 
+    // burrada suanki soru tum sorular dan kucukse suanki soruyu guncelle 
+    //ve zamanida 
+    if (nextIndex < questions.length) {
+      setCurrentIndex(nextIndex);
+      setTime(15);
+    }
+    // burada quizi bitir  
+    else {
+      setFinished(true);
+
+
+
+
+      // 📊 Skoru +kullanici+taruh+katagori hepsini localstroga  kaydet
+      const percent = Math.round(((score + (answer && currentQuestion.checkAnswer(answer) ? 1 : 0)) / questions.length) * 100);
+      const newScore = {
+        // kullanici adi
+        email: user, 
+        category,
+        //dogru sayisi
+        score: score + (answer && currentQuestion.checkAnswer(answer) ? 1 : 0),
+        //toplam soru
+        total: questions.length,
+        percent,//yuzdelik basari yuzdesi
+        date: new Date().toLocaleString(), //tarih
+      };
+      const scores = JSON.parse(localStorage.getItem("scores")) || [];
+      scores.push(newScore);//yeni skorlari eski sorularin sonra atar 
+      localStorage.setItem("scores", JSON.stringify(scores)); //localstrage kayd et 
+    }
+  }
+
+
+
+
+
+
+// burada quiz   bittigi icin tekrar herseyi sifirla 
+  function resetQuiz() {
+    setCurrentIndex(0);
+    setScore(0);
+    setFinished(false);
+    setTime(15);
+  }
+
+
+
+
+  return (
+    <div className="container mt-5">  {/*gelen sorularin containeri olusuturuyoe */}
+      {!finished ? (
+        <div className="card p-4 shadow"> {/*burada gelen sorularin arka kismindaki kart */}
+          <h5 className="mb-3">
+            {category} Quiz - Soru {currentIndex + 1} / {questions.length} {/*burada catagori QUIZ KELIMESI SORU kacinici soruda oldugun /kac soru var onu gosteren kisim*/}
+          </h5>
+          <h4>{currentQuestion.text}</h4> {/*bu kisimda sorular */}
+
+
+             {/*zaman */}
+          <div className="alert alert-warning mt-3">
+            Kalan Süre: <strong>{time}</strong> saniye
+          </div>   
+
+
+
+
+
+
+{/*bu kisimda siklari tek tek dolasir ve senin verdigin cevapla ile dogru kontrol saglanir*/}
+          <div className="mt-3">
+            {currentQuestion.options.map((opt, i) => (
+              <button
+                key={i}
+                className="btn btn-outline-primary m-2"
+                onClick={() => handleAnswer(opt)}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+
+
+
+
+{/* burada sorular kisimda bulaunu % cizgisini olusturan kisim */}
+
+          <div className="progress mt-3">
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+            >
+              {Math.round(((currentIndex + 1) / questions.length) * 100)}% {/*basari orani hesapla */}
+            </div>
+          </div>
+        </div>
+
+
+
+      ) : (
+        <div className="card p-5 shadow text-center">
+          <h3>🎉 {category} Quiz Bitti!</h3>
+          <p className="mt-3">
+            Skorun: <strong>{score}</strong> / {questions.length}
+            <br />
+            Başarı Oranı: <strong>{Math.round((score / questions.length) * 100)}%</strong>
+          </p>
+
+          {/* Tekrar Başla */}
+          <button className="btn btn-primary mt-3 me-2" onClick={resetQuiz}>
+            Tekrar Başla 🔄
+          </button>
+
+          {/* Ana Sayfaya Dön */}
+          <button className="btn btn-secondary mt-3 me-2" onClick={onBack}>
+            Ana Sayfaya Dön 🏠
+          </button>
+
+          {/* Skor Tablosuna Git */}
+          <button className="btn btn-success mt-3" onClick={onShowScores}>
+            Skor Tablosunu Gör 📊
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (finished && reviewMode) {
+    return (
+      <div className="container mt-5">  // burada container olusturuluyor
+        <div className="card p-4 shadow"> // sonra kart
+          <h3 className="text-center">📖 Cevap İncelemesi</h3>
+          <ul className="list-group mt-3">
+            {answers.map((a, i) => (   // cevaplari tek tek dolas
+              <li key={i} className="list-group-item">
+                <strong>{i + 1}. {a.question}</strong> // bir kartin usutune soru yazilir ama index tutuyoor
+                <div>
+                  Senin cevabın:{" "}
+                  <span style={{ color: a.selected === a.correct ? "green" : "red" }}>   // burada senin cevabin dogru ise yesil degil ise kirmizi yanar yazi  cevap vermesen 
+                    {a.selected || "Cevap vermedin"}{" "}                                // cevap vermedin der 
+                    {a.selected === a.correct ? "✅" : "❌"}                             // dogru ise dogru ikonu degil ise yanlis ikonu ekelr 
+                  </span>
+                </div>
+                <div>Doğru cevap: <strong>{a.correct}</strong></div>                     // dogru cevapi yazar 
+              </li>
+            ))}
+          </ul>
+          <button className="btn btn-secondary mt-3" onClick={() => setReviewMode(false)}>             // sonuclara don dersen setreviewmode kapanir false olur 
+            ← Sonuçlara Dön
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
